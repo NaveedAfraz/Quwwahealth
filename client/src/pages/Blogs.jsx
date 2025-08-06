@@ -325,7 +325,7 @@ const Blogs = () => {
 
         {/* Other Blog Posts */}
         <div className="space-y-8">
-          {allBlogPosts.map((post) => (
+          {otherPosts.map((post) => (
             <article key={post.id} className="border-t border-gray-200 pt-8">
               <Link to={`/blog/${post.id}`} className="group">
                 <div className="flex flex-col sm:flex-row items-start gap-6">
