@@ -1,5 +1,5 @@
 import React from 'react';
-import heroImage from '../assets/images/Hero/hero2.jpg';
+import heroImage from '../assets/images/OurProgrammes/jobImage.jpg';
 
 const InternshipHero = () => {
   const heroStyle = {

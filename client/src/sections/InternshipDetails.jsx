@@ -26,9 +26,9 @@ const InternshipDetails = () => {
             </svg>
           </div>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 w-full mx-auto gap-12">
           <div>
-            <ul className="space-y-4 mb-12 ml-5">
+            <ul className="space-y-4 mb-12 ml-5 lg:ml-20">
               {roles.map((role, i) => (
                 <li key={i} className="flex items-start">
                   <span className="text-green-600 mr-2">•</span>
@@ -38,8 +38,8 @@ const InternshipDetails = () => {
             </ul>
           </div>
           <div>
-            <h3 className="text-2xl font-bold mb-4 ml-5">Who Can Apply?</h3>
-            <ul className="space-y-2 ml-5">
+            <h3 className="text-2xl font-bold mb-4 ml-20">Who Can Apply?</h3>
+            <ul className="space-y-2 ml-5 lg:ml-20">
               <li className="flex items-start">
                 <span className="text-green-600 mr-2">•</span>
                 <span>Students or fresh graduates in any stream</span>

@@ -8,20 +8,23 @@ const Footer = () => {
     <footer className="bg-[#161C28]  text-white">
       <div className="container mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-         
+
           <div className="lg:col-span-2 flex justify-center flex-col ">
             <img src={footerLogo} alt="Quwwa Health Logo" className="h-auto w-[30%] md:w-[50%] lg:w-[40%] xl:w-[30%] mb-6" />
-            <p className="text-gray-300 mb-4 text-base sm:text-lg md:text-xl">Get started!</p>
-            <div className="relative max-w-sm">
-              <input
-                type="email"
-                placeholder="Enter your email here"
-                className="w-full bg-[#1E2A3A] border border-gray-400 rounded-full py-2 sm:py-3 pl-4 sm:pl-6 pr-12 sm:pr-16 text-sm sm:text-base text-white placeholder-gray-400 focus:outline-none focus:border-[#54BD95]"
-              />
-              <button className="absolute inset-y-0 right-0 flex items-center justify-center w-8 sm:w-10 h-8 sm:h-10 bg-[#54BD95] rounded-full m-1 hover:bg-[#4AAE88] transition-colors">
-                <ArrowRightIcon className="w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 text-white" />
-              </button>
-            </div>
+            <a
+              href="https://www.linkedin.com/build-relation/newsletter-follow?entityUrn=7358912937480155136"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative max-w-sm block"
+            >
+              <div className="w-full bg-[#1E2A3A] border border-gray-400 rounded-full py-2 sm:py-3 pl-4 sm:pl-6 pr-12 sm:pr-16 text-sm sm:text-base text-white placeholder-gray-400">
+                <span className="inline-flex items-center justify-center">
+                  Subscribe to our newsletter
+                </span>
+              </div>
+              <ArrowRightIcon className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 text-blue-800 bg-white rounded-full p-1 cursor-pointer shadow" />
+            </a>
+
           </div>
 
           <div>
@@ -52,7 +55,7 @@ const Footer = () => {
           <p>COPYRIGHT {new Date().getFullYear()} QUWWA HEALTH LLP. – ALL RIGHTS RESERVED</p>
         </div>
       </div>
-    </footer>
+    </footer >
   )
 }
 
