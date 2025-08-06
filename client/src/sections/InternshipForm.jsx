@@ -38,7 +38,7 @@ const InternshipForm = () => {
     setSuccess(false);
 
     try {
-      await axios.post(`${config.API_BASE_URL}/contact`, formData);
+      await axios.post(`${config.API_BASE_URL}/internshipForm`, formData);
       setSuccess(true);
       toast.success("Form submitted successfully!");
     } catch (err) {

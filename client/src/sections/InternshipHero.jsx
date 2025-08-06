@@ -7,7 +7,7 @@ const InternshipHero = () => {
   };
 
   return (
-    <section 
+    <section
       className="relative bg-cover bg-center bg-no-repeat py-20 sm:py-24 md:py-32 lg:py-40 text-white text-center"
       style={heroStyle}
     >

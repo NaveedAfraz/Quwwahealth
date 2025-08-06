@@ -100,6 +100,56 @@ apiRouter.post("/contact", async (req, res) => {
   }
 });
 
+apiRouter.post("/internshipForm", async (req, res) => {
+  const {
+    fullName,
+    email,
+    phone,
+    dob,
+    city,
+    course,
+    college,
+    year,
+    lookingFor,
+    role,
+    mode,
+  } = req.body;
+
+  try {
+    await resend.emails.send({
+      from: `Internship Application <no-reply@quwwahealth.com>`,
+      to: [process.env.RECEIVER_EMAIL],
+      reply_to: email,
+      subject: `New Internship Application from ${fullName}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; color: #333;">
+          <h2>New Internship Application Received</h2>
+          <p><strong>Full Name:</strong> ${fullName}</p>
+          <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
+          <p><strong>Phone:</strong> ${phone}</p>
+          <p><strong>Date of Birth:</strong> ${dob}</p>
+          <p><strong>City/Country:</strong> ${city}</p>
+          <p><strong>Course:</strong> ${course}</p>
+          <p><strong>College/University:</strong> ${college}</p>
+          <p><strong>Year of Study:</strong> ${year}</p>
+          <p><strong>Looking For:</strong> ${lookingFor}</p>
+          <p><strong>Preferred Role:</strong> ${role}</p>
+          <p><strong>Preferred Work Mode:</strong> ${mode}</p>
+          <hr />
+          <p style="font-size: 12px; color: #888;">You can reply directly to <a href="mailto:${email}">${email}</a> to follow up with the applicant.</p>
+        </div>
+      `,
+    });
+
+    res
+      .status(200)
+      .json({ message: "Internship form submitted successfully!" });
+  } catch (err) {
+    console.error("Email send error:", err);
+    res.status(500).json({ message: "Failed to send internship form." });
+  }
+});
+
 // Auth: verify Firebase token, set session cookie
 
 apiRouter.post("/auth/register", async (req, res) => {
