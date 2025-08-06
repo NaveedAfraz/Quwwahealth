@@ -140,7 +140,7 @@ const InternshipForm = () => {
 
             <button
               type="submit"
-              className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors text-lg font-semibold disabled:opacity-50"
+              className="w-full bg-[#54BD95] text-white py-3 cursor-pointer px-4 rounded-lg hover:bg-[#54BD95] transition-colors text-lg font-semibold disabled:opacity-50"
               disabled={loading}
             >
               {loading ? 'Submitting...' : 'Apply Now'}

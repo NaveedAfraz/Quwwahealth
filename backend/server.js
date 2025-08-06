@@ -151,7 +151,6 @@ apiRouter.post("/internshipForm", async (req, res) => {
 });
 
 // Auth: verify Firebase token, set session cookie
-
 apiRouter.post("/auth/register", async (req, res) => {
   logToFile("📩 Register route hit");
 

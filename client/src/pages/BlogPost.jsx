@@ -43,6 +43,65 @@ const RelatedArticles = ({ currentPostId, allBlogPosts }) => {
   );
 };
 
+// const post = [{
+//   id: 6,
+//   title: 'Building a Health-Promoting School: Practical Steps for Educators and Administrators',
+//   image: '',
+//   readTime: '4 Min',
+//   date: 'July 12, 2025',
+//   // --- Detailed Content (Added) ---
+//   category: 'School Policy',
+//   author: {
+//     name: 'Tamás Hám-Szabó',
+//     title: 'Founder of SAAS First - the Best AI and Data-Driven Customer Engagement Tool.',
+//     bio: `With 11 years in SaaS, I've built MillionVerifier and SAAS First. Passionate about SaaS, data, and AI. Let's connect if you share the same drive for success!`,
+//     image: '',
+//     linkedin: '#',
+//   },
+
+//   headings: [
+//     { id: 'structured-fitness', title: 'Start with Structured Fitness' },
+//     { id: 'mental-wellness', title: 'Embed Mental Wellness' },
+//     { id: 'prioritize-nutrition', title: 'Prioritize Nutrition' },
+//     { id: 'engage-community', title: 'Engage Teachers and Parents' },
+//     { id: 'data-driven-policy', title: 'Use Fitness Data to Drive Policy' },
+//   ],
+//   content: `
+//       <h1 class="text-4xl font-bold mt-8 mb-4">Building a Health-Promoting School: Practical Steps</h1>
+//       <p class="text-lg text-gray-700 leading-relaxed mb-6">
+//         Creating a health-promoting school is about more than just adding a fitness class—it requires a shift in culture, policies, and daily routines. Here’s how schools can lead the change:
+//       </p>
+
+//       <h2 id="structured-fitness" class="text-3xl font-bold mt-12 mb-4 scroll-mt-20">Start with Structured Fitness</h2>
+//       <p class="text-lg text-gray-700 leading-relaxed mb-6">
+//         Daily movement should be non-negotiable. Implement school-based fitness programs that include aerobic, strength, and coordination activities. Use PE assessments to track participation and growth, and adjust programming based on student needs.
+//       </p>
+
+//       <h2 id="mental-wellness" class="text-3xl font-bold mt-12 mb-4 scroll-mt-20">Embed Mental Wellness</h2>
+//       <p class="text-lg text-gray-700 leading-relaxed mb-6">
+//         Mental and emotional health are just as critical as physical fitness. Integrate wellness programs that include mindfulness sessions, emotional literacy lessons, and social-emotional learning. These tools help students build resilience, focus, and healthy relationships.
+//       </p>
+
+//       <h2 id="prioritize-nutrition" class="text-3xl font-bold mt-12 mb-4 scroll-mt-20">Prioritize Nutrition</h2>
+//       <p class="text-lg text-gray-700 leading-relaxed mb-6">
+//         Food fuels learning. Review canteen menus, remove ultra-processed options, and introduce whole-food choices. The Healthy Canteen Initiative from Quwwa Health offers menu planning support, nutrition education materials, and food literacy workshops for students and staff.
+//       </p>
+
+//       <h2 id="engage-community" class="text-3xl font-bold mt-12 mb-4 scroll-mt-20">Engage Teachers and Parents</h2>
+//       <p class="text-lg text-gray-700 leading-relaxed mb-6">
+//         The more involved adults are, the more successful the program becomes. Host teacher fitness events to model wellness for students and organize family-friendly activities like parent-child yoga, health fairs, and sports days. A whole-community approach builds momentum.
+//       </p>
+
+//       <h2 id="data-driven-policy" class="text-3xl font-bold mt-12 mb-4 scroll-mt-20">Use Fitness Data to Drive Policy</h2>
+//       <p class="text-lg text-gray-700 leading-relaxed mb-6">
+//         Collect BMI, flexibility, strength, and endurance data to evaluate outcomes and inform health-related decisions. Establish clear wellness goals, and use year-over-year comparisons to adjust policies and resource allocation.
+//       </p>
+
+//       <p class="text-lg text-gray-700 leading-relaxed mt-8">
+//         <strong>Conclusion:</strong> Quwwa Health partners with schools to embed wellness into their DNA—through fitness, nutrition, mental health, and data-driven strategy. A health-promoting school is not just possible; it's essential for future-ready learners.
+//       </p>
+//     `,
+// },]
 
 const BlogPost = () => {
   const { id } = useParams();
@@ -51,11 +110,11 @@ const BlogPost = () => {
   const [activeId, setActiveId] = useState(null);
 
   // Get blog state from Redux
-  const { 
-    currentBlog: blogData, 
+  const {
+    currentBlog: blogData,
     blogs: allBlogs,
-    loading, 
-    error 
+    loading,
+    error
   } = useSelector((state) => ({
     currentBlog: state.blog.currentBlog,
     blogs: state.blog.blogs,
@@ -133,6 +192,7 @@ const BlogPost = () => {
     );
   }
 
+  // console.log(post[0].id);
   if (error || !post) {
     return (
       <div className="text-center py-20">
@@ -159,7 +219,7 @@ const BlogPost = () => {
       return '';
     }
   };
-
+  console.log(post.id);
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -280,22 +340,17 @@ const BlogPost = () => {
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center hover:bg-green-700"
+                  className="w-10 h-10  bg-green-600 rounded-lg flex items-center justify-center hover:bg-green-700"
                 >
                   <FaWhatsapp className="text-white text-xl" />
                 </a>
 
-                {/* <a
-                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-                    `https://www.quwwahealth.com/blog/${post?.id || ''}`
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center hover:bg-blue-700"
+                <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+                  `https://www.quwwahealth.com/blog/${post.id || post[0].id}`
+                )}`} target="_blank" rel="noopener noreferrer" className="w-10 h-10  bg-blue-500 rounded-lg flex items-center justify-center hover:bg-green-700"
                 >
-                  <FaFacebookF className="text-white text-xl" />
-                </a> */}
-
+                  <FaLinkedinIn className="text-white text-xl " />
+                </a>
               </div>
             </div>
 
