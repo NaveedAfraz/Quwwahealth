@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaLinkedinIn, FaFacebookF, FaTwitter } from 'react-icons/fa';
+import { FaLinkedinIn, FaFacebookF, FaTwitter, FaWhatsapp } from 'react-icons/fa';
 import { X } from "lucide-react";
 import { FiInstagram, FiClock, FiTag } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
@@ -74,7 +74,7 @@ const BlogPost = () => {
       window.scrollTo(0, 0);
       setActiveId(null);
     }
-    
+
     // Fetch all blogs for related articles if not already loaded
     if (!allBlogs || allBlogs.length === 0) {
       dispatch(getAllBlogs());
@@ -261,11 +261,41 @@ const BlogPost = () => {
             <div className="bg-[#0A1C8F] text-white p-6 rounded-2xl shadow-lg">
               <h3 className="font-bold text-lg">Share with your community!</h3>
               <div className="flex space-x-3 mt-4">
-                <a href="https://x.com/Quwwahealth?t=ZXp9QQMRDKK-DECQhXtFiQ&s=09" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30"><X /></a>
-                <a href="https://www.linkedin.com/company/quwwahealth/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30"><FaLinkedinIn /></a>
-                <a href="https://www.instagram.com/quwwahealth?igsh=MXVyYTllbjE0bTFucw==" className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30">
-                  <FiInstagram />
+                <a
+                  href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(
+                    `https://www.quwwahealth.com/blog/${post?.id || ''}`
+                  )}&text=${encodeURIComponent(
+                    `Check out this blog: ${post?.title || 'Amazing blog post'}`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-black rounded-lg flex items-center justify-center hover:bg-gray-800"
+                >
+                  <X className="text-white text-xl" />
                 </a>
+
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(
+                    `Check out this blog: ${post?.title || 'Amazing blog post'}\nhttps://www.quwwahealth.com/blog/${post?.id || ''}`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center hover:bg-green-700"
+                >
+                  <FaWhatsapp className="text-white text-xl" />
+                </a>
+
+                {/* <a
+                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+                    `https://www.quwwahealth.com/blog/${post?.id || ''}`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center hover:bg-blue-700"
+                >
+                  <FaFacebookF className="text-white text-xl" />
+                </a> */}
+
               </div>
             </div>
 
@@ -302,5 +332,6 @@ const BlogPost = () => {
     </div>
   );
 };
+
 
 export default BlogPost;

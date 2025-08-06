@@ -15,9 +15,9 @@ const uploadRoutes = require("./routes/upload");
 const testimonialRoutes = require("./routes/testimonialRoutes");
 const authMiddleware = require("./middleware/authMiddleware");
 const fs = require("fs");
-const path = require('path');
-const logsDir = path.join(__dirname, 'logs');
-const logFile = path.join(logsDir, 'app.log');
+const path = require("path");
+const logsDir = path.join(__dirname, "logs");
+const logFile = path.join(logsDir, "app.log");
 
 // Ensure logs directory exists
 if (!fs.existsSync(logsDir)) {
@@ -29,14 +29,14 @@ function logToFile(line) {
   try {
     fs.appendFileSync(logFile, `[${timestamp}] ${line}\n`);
   } catch (err) {
-    console.error('Failed to write to log file:', err);
+    console.error("Failed to write to log file:", err);
   }
 }
 app.use(
   cors({
     origin: [
-      process.env.FRONTEND_URL,
-      "https://www.quwwahealth.com/",
+      "https://www.quwwahealth.com",
+      "https://quwwahealth.com",
       "http://localhost:5173",
     ],
     credentials: true,
@@ -55,7 +55,7 @@ const apiRouter = express.Router();
 
 // Mount all API routes under /api
 app.use("/api", apiRouter); // ✅ Match frontend request
- 
+
 // Mount blog routes under /api
 apiRouter.use("/blogs", blogRoutes);
 
@@ -136,7 +136,9 @@ apiRouter.post("/auth/register", async (req, res) => {
 
     if (existingUsers.length > 0) {
       logToFile("⚠️ User already exists");
-      return res.status(400).json({ message: "User already exists with this email" });
+      return res
+        .status(400)
+        .json({ message: "User already exists with this email" });
     }
 
     logToFile("🔐 Hashing password...");
@@ -174,11 +176,9 @@ apiRouter.post("/auth/register", async (req, res) => {
     const jwtSecret = "secretkey"; // change to env in production
     logToFile(`🔐 Creating JWT for user ID: ${data.insertId}`);
 
-    const jwtToken = jwt.sign(
-      { id: data.insertId, email },
-      jwtSecret,
-      { expiresIn: "7d" }
-    );
+    const jwtToken = jwt.sign({ id: data.insertId, email }, jwtSecret, {
+      expiresIn: "7d",
+    });
 
     res.cookie("auth_token", jwtToken, {
       httpOnly: false,
@@ -210,10 +210,11 @@ apiRouter.post("/auth/register", async (req, res) => {
     const logMsg = `🛑 Register error: ${error.message || error}`;
     console.error(logMsg);
     logToFile(logMsg);
-    return res.status(500).json({ message: "Failed to register user", success: false });
+    return res
+      .status(500)
+      .json({ message: "Failed to register user", success: false });
   }
 });
-
 
 apiRouter.post("/auth/login", async (req, res) => {
   const { email, password } = req.body;
@@ -228,7 +229,9 @@ apiRouter.post("/auth/login", async (req, res) => {
   }
 
   try {
-    const [users] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
+    const [users] = await db.query("SELECT * FROM users WHERE email = ?", [
+      email,
+    ]);
 
     if (users.length === 0) {
       const msg = `❌ No user found with email: ${email}`;
@@ -246,11 +249,9 @@ apiRouter.post("/auth/login", async (req, res) => {
     }
 
     const jwtSecret = process.env.JWT_SECRET || "secretkey";
-    const token = jwt.sign(
-      { id: user.id, email: user.email },
-      jwtSecret,
-      { expiresIn: "7d" }
-    );
+    const token = jwt.sign({ id: user.id, email: user.email }, jwtSecret, {
+      expiresIn: "7d",
+    });
 
     const isProduction = process.env.NODE_ENV === "production";
 
@@ -263,7 +264,7 @@ apiRouter.post("/auth/login", async (req, res) => {
         path: "/",
       })
       .status(200)
-      .json({ message: "Login successful", user , success : true});
+      .json({ message: "Login successful", user, success: true });
 
     logToFile(`✅ Login successful for: ${email}`);
   } catch (error) {
@@ -274,7 +275,6 @@ apiRouter.post("/auth/login", async (req, res) => {
   }
 });
 
-
 // Route for frontend to check authentication status
 apiRouter.get("/auth/check", authMiddleware, async (req, res) => {
   const User = req.user;
@@ -283,7 +283,7 @@ apiRouter.get("/auth/check", authMiddleware, async (req, res) => {
     const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [
       User.email,
     ]);
-        const tablesMsg = `🗄️ datae: ${rows}`;
+    const tablesMsg = `🗄️ datae: ${rows}`;
     console.log(tablesMsg);
     logToFile(tablesMsg);
     const fetchUser = rows[0];
@@ -354,11 +354,9 @@ apiRouter.post("/auth/session", async (req, res) => {
 
     // 3. Generate JWT
     const jwtSecret = process.env.JWT_SECRET || "secretkey";
-    const jwtToken = jwt.sign(
-      { id: user.id, email: user.email },
-      jwtSecret,
-      { expiresIn: "7d" }
-    );
+    const jwtToken = jwt.sign({ id: user.id, email: user.email }, jwtSecret, {
+      expiresIn: "7d",
+    });
 
     // 4. Set cookie options
     const isProd = process.env.NODE_ENV === "production";
@@ -370,19 +368,21 @@ apiRouter.post("/auth/session", async (req, res) => {
       path: "/",
     };
 
-    logToFile(`🍪 Setting auth_token cookie with: ${JSON.stringify(cookieOptions)}`);
+    logToFile(
+      `🍪 Setting auth_token cookie with: ${JSON.stringify(cookieOptions)}`
+    );
 
     res.cookie("auth_token", jwtToken, cookieOptions);
     return res.status(200).json({ message: "✅ Session cookie set", user });
-
   } catch (err) {
     const errorMsg = `🛑 Firebase token verify error: ${err.message || err}`;
     console.error(errorMsg);
     logToFile(errorMsg);
-    return res.status(401).json({ message: "Invalid token", error: err.message });
+    return res
+      .status(401)
+      .json({ message: "Invalid token", error: err.message });
   }
 });
-
 
 apiRouter.post("/forgot-password", async (req, res) => {
   const { email } = req.body;
@@ -500,7 +500,6 @@ apiRouter.post("/reset-password", async (req, res) => {
   }
 });
 
-
 async function bootstrap() {
   try {
     // 1) Ensure DB & tables exist
@@ -524,7 +523,8 @@ async function bootstrap() {
       logToFile(serverMsg);
     });
   } catch (err) {
-    const errorMsg = "🔥 Error during bootstrap: " + (err.stack || err.message || err);
+    const errorMsg =
+      "🔥 Error during bootstrap: " + (err.stack || err.message || err);
     console.error(errorMsg);
     logToFile(errorMsg);
     process.exit(1);
