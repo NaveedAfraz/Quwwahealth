@@ -10,7 +10,7 @@ A modern React application for Quwwa Health with Redux state management and auth
 
 ## Prerequisites
 
-- Node.js (v18 or higher)
+- Node.js (v19 or higher)
 - npm or yarn
 - Backend API running on `localhost:3000`
 
