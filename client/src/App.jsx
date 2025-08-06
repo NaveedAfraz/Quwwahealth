@@ -25,6 +25,7 @@ import AdminContacts from './pages/Admin/AdminContacts'
 import AdminTestimonials from './pages/Admin/AdminTestimonials'
 import HolidayCamp from './pages/HolidayCamp'
 import Branding from './pages/Branding'
+import Internship from './pages/Internship'
 import Login from './pages/login'
 import Register from './pages/register'
 import { useState } from 'react'
@@ -50,6 +51,7 @@ function App() {
             <Route path="blog/:id" element={<BlogPost />} />
             <Route path="/holiday-camp" element={<HolidayCamp />} />
             <Route path="/branding" element={<Branding />} />
+            <Route path="/internship" element={<Internship />} />
             <Route path="auth" element={<Auth />}>
               <Route index path='login' element={<Login />} />
               <Route path='register' element={<Register />} />
