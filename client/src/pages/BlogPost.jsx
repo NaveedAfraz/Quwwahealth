@@ -346,8 +346,8 @@ const BlogPost = () => {
                 </a>
 
                 <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-                  `https://www.quwwahealth.com/blog/${post.id || post[0].id}`
-                )}`} target="_blank" rel="noopener noreferrer" className="w-10 h-10  bg-blue-500 rounded-lg flex items-center justify-center hover:bg-green-700"
+                  `https://www.quwwahealth.com/blog/${post?.id || ''}`
+                )}`} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors"
                 >
                   <FaLinkedinIn className="text-white text-xl " />
                 </a>
