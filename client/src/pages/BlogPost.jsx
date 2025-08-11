@@ -7,10 +7,20 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getBlogById, getAllBlogs, clearError } from '../store/slices/blogSlice';
 import authorImage from '../assets/images/AboutUs/team1.jpeg';
 import { Link } from 'react-router-dom';
-import { formatDate } from '../config/formatDate';
+// import { formatDate } from '../config/formatDate';
 // --- New Component for Related Articles ---
 const RelatedArticles = ({ currentPostId, allBlogPosts }) => {
   // Filter out the current post and take the next 3 articles
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    try {
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+      return new Date(dateString).toLocaleDateString('en-US', options);
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return '';
+    }
+  };
   const relatedPosts = allBlogPosts
     .filter((post) => post.id !== currentPostId)
     .slice(0, 3);
@@ -34,7 +44,7 @@ const RelatedArticles = ({ currentPostId, allBlogPosts }) => {
               <h3 className="mt-4 font-bold text-lg text-gray-900 group-hover:text-[#5D3EFF] transition-colors">
                 {post.title}
               </h3>
-              <p className="text-sm text-gray-500 mt-2">{formatDate(post.date)} • {post.readTime || '5 Min'}</p>
+              <p className="text-sm text-gray-500 mt-2">{formatDate(post.created_at)} • {post.readTime || '5 Min'}</p>
             </div>
           </Link>
         ))}
