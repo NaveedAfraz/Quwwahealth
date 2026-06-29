@@ -7,6 +7,14 @@ const api = axios.create({
   withCredentials: true,
 });
 
+api.interceptors.request.use((config) => {
+  if (config.url && config.url.startsWith('/') && config.baseURL) {
+    config.url = `${config.baseURL}${config.url}`;
+    config.baseURL = undefined;
+  }
+  return config;
+});
+
 // Get single blog by ID
 export const getBlogById = createAsyncThunk(
   "blog/getBlogById",

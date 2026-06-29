@@ -10,7 +10,8 @@ const Chatbot = ({ isOpen, setIsOpen }) => {
   const [showSuggestions, setShowSuggestions] = useState(true);
   const chatContainerRef = useRef(null);
 
-  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+  const apiKey = (import.meta.env.VITE_GEMINI_API_KEY || '').replace(/['"]/g, '');
+  const genAI = new GoogleGenerativeAI(apiKey);
 
   // Pre-defined FAQ questions and answers
   const faqData = {
@@ -64,86 +65,265 @@ const Chatbot = ({ isOpen, setIsOpen }) => {
     }
   }, [messages]);
 
+  const appendContactInfo = (text) => {
+    const contactSuffix = " For more info Email us at info@quwwahealth.com or call +91 8770922310.";
+    if (text.includes("info@quwwahealth.com") || text.includes("+91 8770922310") || text.includes("8770922310")) {
+      return text;
+    }
+    return `${text}${contactSuffix}`;
+  };
+
+  const findFuzzyFAQ = (query) => {
+    const cleanQuery = query.trim().toLowerCase().replace(/[?.,!]/g, '');
+    const words = cleanQuery.split(/\s+/).filter(w => w.length > 3);
+    if (words.length === 0) return null;
+
+    let bestKey = null;
+    let maxMatches = 0;
+
+    Object.keys(faqData).forEach(key => {
+      const cleanKey = key.toLowerCase();
+      let matches = 0;
+      words.forEach(word => {
+        if (cleanKey.includes(word)) {
+          matches++;
+        }
+      });
+      if (matches > maxMatches) {
+        maxMatches = matches;
+        bestKey = key;
+      }
+    });
+
+    return bestKey ? faqData[bestKey] : null;
+  };
+
+  const generateFallbackResponse = (query) => {
+    const cleanQuery = query.toLowerCase().trim();
+    
+    // 1. Try fuzzy FAQ lookup
+    const fuzzyMatch = findFuzzyFAQ(query);
+    if (fuzzyMatch) return fuzzyMatch;
+    
+    // 2. Greetings
+    if (/\b(hi|hello|hey|greetings|hii+|hey+)\b/.test(cleanQuery)) {
+      return "Hello! How can I help you today? I'm here to answer any questions about our physical education programs, student fitness assessments, nutrition workshops, or events.";
+    }
+    
+    // 3. Pricing / Cost
+    if (/\b(cost|price|fees|pricing|package|charge|pay)\b/.test(cleanQuery)) {
+      return "Our program costs depend on the school size and the package selected (e.g., number of assessments per year). We can customize a package that fits your school's needs perfectly.";
+    }
+    
+    // 4. Contact / Details
+    if (/\b(contact|phone|call|email|address|reach|office|number)\b/.test(cleanQuery)) {
+      return "You can reach us directly for any queries, demo scheduling, or partnerships. We are always happy to help!";
+    }
+    
+    // 5. Programs / Fitness / Sports
+    if (/\b(program|pe|sports|fitness|coach|assess|report|test|card|health)\b/.test(cleanQuery)) {
+      return "We offer age-appropriate PE curricula, student fitness assessments (measuring BMI, strength, flexibility, etc.), and specialized sports coaching sessions for football, cricket, and more.";
+    }
+    
+    // 6. Nutrition / Canteen / Food
+    if (/\b(nutrition|canteen|food|sugar|diet|eat)\b/.test(cleanQuery)) {
+      return "Our healthy canteen initiative helps schools build balanced menus, and we conduct interactive nutrition workshops and sugar awareness displays for students.";
+    }
+    
+    // 7. Camps
+    if (/\b(camp|summer|winter|holiday|break)\b/.test(cleanQuery)) {
+      return "Our holiday camps combine sports coaching, physical training, and creative workshops during school breaks. We can organize and run these directly at your school campus.";
+    }
+    
+    // 8. General fallback options to rotate
+    const generalFallbacks = [
+      "Could you please specify if you're interested in our school PE classes, student health report cards, or nutrition programs?",
+      "I want to make sure I give you the best information. Are you asking about our school packages, event organization, or coaching staff?",
+      "We help schools promote healthy active lifestyles through assessments, PE coaching, and canteen menu design. Let me know what specific area you'd like to learn more about."
+    ];
+    
+    const index = cleanQuery.length % generalFallbacks.length;
+    return generalFallbacks[index];
+  };
+
+  const callGroqFallback = async (prompt) => {
+    const groqKey = (import.meta.env.VITE_GROQ_API_KEY || import.meta.env.VITE_GROK_API_KEY || '').replace(/['"]/g, '');
+    if (!groqKey) {
+      throw new Error('Groq API Key not configured');
+    }
+    
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${groqKey}`
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.7
+      })
+    });
+    
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Groq API error: ${response.status} - ${errText}`);
+    }
+    
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content || '';
+  };
+
+  const withTimeout = (promise, ms) => {
+    return Promise.race([
+      promise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), ms))
+    ]);
+  };
+
+  const getBotResponse = async (query) => {
+    const cleanQuery = query.trim().toLowerCase().replace(/[?.,!]/g, '');
+
+    // 1. Check exact FAQ match
+    const exactFaqKey = Object.keys(faqData).find(key => {
+      return key.trim().toLowerCase().replace(/[?.,!]/g, '') === cleanQuery;
+    });
+    if (exactFaqKey) {
+      return faqData[exactFaqKey];
+    }
+
+    // 2. Check fuzzy FAQ match (only for queries >= 4 chars)
+    if (query.trim().length >= 4) {
+      const fuzzyMatch = findFuzzyFAQ(query);
+      if (fuzzyMatch) {
+        return fuzzyMatch;
+      }
+    }
+
+    // 3. Check keyword categories
+    // Greetings
+    if (/\b(hi|hello|hey|greetings|hii+|hey+)\b/.test(cleanQuery)) {
+      return "Hello! How can I help you today? I'm here to answer any questions about our physical education programs, student fitness assessments, nutrition workshops, or events.";
+    }
+    
+    // Pricing / Cost
+    if (/\b(cost|price|fees|pricing|package|charge|pay)\b/.test(cleanQuery)) {
+      return "Our program costs depend on the school size and the package selected (e.g., number of assessments per year). We can customize a package that fits your school's needs perfectly.";
+    }
+    
+    // Contact / Details
+    if (/\b(contact|phone|call|email|address|reach|office|number)\b/.test(cleanQuery)) {
+      return "You can reach us directly for any queries, demo scheduling, or partnerships. Email us at info@quwwahealth.com or call +91 8770922310.";
+    }
+    
+    // Programs / Fitness / Sports
+    if (/\b(program|pe|sports|fitness|coach|assess|report|test|card|health)\b/.test(cleanQuery)) {
+      return "We offer age-appropriate PE curricula, student fitness assessments (measuring BMI, strength, flexibility, etc.), and specialized sports coaching sessions for football, cricket, and more.";
+    }
+    
+    // Nutrition / Canteen / Food
+    if (/\b(nutrition|canteen|food|sugar|diet|eat)\b/.test(cleanQuery)) {
+      return "Our healthy canteen initiative helps schools build balanced menus, and we conduct interactive nutrition workshops and sugar awareness displays for students.";
+    }
+    
+    // Camps
+    if (/\b(camp|summer|winter|holiday|break)\b/.test(cleanQuery)) {
+      return "Our holiday camps combine sports coaching, physical training, and creative workshops during school breaks. We can organize and run these directly at your school campus.";
+    }
+
+    // 4. Fall back to AI with a streamlined system prompt
+    const systemPrompt = `You are the Quwwa Health Assistant, a helpful AI assistant for Quwwa Health.
+Quwwa Health helps schools promote student health through:
+- Physical Education (PE) programs and specialized sports coaching.
+- Student fitness assessments and health report cards.
+- Healthy canteen menu design and nutrition workshops.
+- Summer/winter holiday camps.
+
+Instructions:
+- Answer the user's question concisely, professionally, and in a friendly tone.
+- If the user asks for contact information, always provide: Email us at info@quwwahealth.com or call +91 8770922310.
+
+User's question: ${query}`;
+
+    try {
+      console.time("Groq AI Call");
+      const text = await withTimeout(callGroqFallback(systemPrompt), 4000);
+      console.timeEnd("Groq AI Call");
+      return text;
+    } catch (groqError) {
+      console.error('Groq API error, trying Gemini:', groqError);
+      try {
+        console.time("Gemini AI Call");
+        const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
+        const result = await withTimeout(model.generateContent(systemPrompt), 4000);
+        const response = await result.response;
+        const text = response.text();
+        console.timeEnd("Gemini AI Call");
+        return text;
+      } catch (geminiError) {
+        console.error('Gemini AI error:', geminiError);
+        // Fallback to rotating general suggestions
+        const generalFallbacks = [
+          "Could you please specify if you're interested in our school PE classes, student health report cards, or nutrition programs?",
+          "I want to make sure I give you the best information. Are you asking about our school packages, event organization, or coaching staff?",
+          "We help schools promote healthy active lifestyles through assessments, PE coaching, and canteen menu design. Let me know what specific area you'd like to learn more about."
+        ];
+        const index = cleanQuery.length % generalFallbacks.length;
+        return generalFallbacks[index];
+      }
+    }
+  };
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
     const userMessage = { sender: 'user', text: input };
     setMessages((prev) => [...prev, userMessage]);
+    const currentInput = input;
     setInput('');
     setIsLoading(true);
     setShowSuggestions(false);
 
     try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
-      // Create the system prompt with FAQ data
-      const systemPrompt = `You are the Quwwa Health Assistant, a helpful AI assistant for Quwwa Health - a wellness company that helps schools promote student health through PE, fitness assessments, nutrition, and wellness programs.
-
-Here is our FAQ database with questions and answers:
-
-${Object.entries(faqData).map(([question, answer]) => `Q: ${question}\nA: ${answer}`).join('\n\n')}
-
-Instructions:
-1. If the user's question matches or is related to any of the FAQ questions above, provide the exact answer from the FAQ.
-2. If the user asks about something not covered in the FAQ, provide a helpful response based on your knowledge about Quwwa Health's services.
-3. Keep responses concise and professional.
-4. Always maintain a friendly and helpful tone.
-5. If the user asks about contact information, always provide: Email us at info@quwwahealth.com or call +91 8770922310.
-
-User's question: ${input}`;
-
-      const result = await model.generateContent(systemPrompt);
-      const response = await result.response;
-      const text = response.text();
-
-      setMessages((prev) => [...prev, { sender: 'bot', text }]);
+      const responseText = await getBotResponse(currentInput);
+      setMessages((prev) => [...prev, { sender: 'bot', text: appendContactInfo(responseText) }]);
     } catch (error) {
-      console.error('Gemini API error:', error);
-      setMessages((prev) => [...prev, { sender: 'bot', text: 'Sorry, I encountered an error. Please try again.' }]);
+      console.error('Error getting response:', error);
+      setMessages((prev) => [
+        ...prev,
+        { sender: 'bot', text: appendContactInfo("I'm sorry, I encountered an issue. Please try again or email us at info@quwwahealth.com.") }
+      ]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSuggestedQuestion = (question) => {
+  const handleSuggestedQuestion = async (question) => {
     setInput(question);
-    // Automatically send the suggested question
     const userMessage = { sender: 'user', text: question };
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
     setShowSuggestions(false);
 
-    // Use the same LLM approach for suggested questions
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
-    const systemPrompt = `You are the Quwwa Health Assistant, a helpful AI assistant for Quwwa Health - a wellness company that helps schools promote student health through PE, fitness assessments, nutrition, and wellness programs.
-
-Here is our FAQ database with questions and answers:
-
-${Object.entries(faqData).map(([question, answer]) => `Q: ${question}\nA: ${answer}`).join('\n\n')}
-
-Instructions:
-1. If the user's question matches or is related to any of the FAQ questions above, provide the exact answer from the FAQ.
-2. If the user asks about something not covered in the FAQ, provide a helpful response based on your knowledge about Quwwa Health's services.
-3. Keep responses concise and professional.
-4. Always maintain a friendly and helpful tone.
-5. If the user asks about contact information, always provide: Email us at info@quwwahealth.com or call +91 8770922310.
-
-User's question: ${question}`;
-
-    model.generateContent(systemPrompt)
-      .then(result => result.response.text())
-      .then(text => {
-        setMessages((prev) => [...prev, { sender: 'bot', text }]);
-        setIsLoading(false);
-      })
-      .catch(error => {
-        console.error('Gemini API error:', error);
-        setMessages((prev) => [...prev, { sender: 'bot', text: 'Sorry, I encountered an error. Please try again.' }]);
-        setIsLoading(false);
-      });
+    try {
+      const responseText = await getBotResponse(question);
+      setMessages((prev) => [...prev, { sender: 'bot', text: appendContactInfo(responseText) }]);
+    } catch (error) {
+      console.error('Error getting response:', error);
+      setMessages((prev) => [
+        ...prev,
+        { sender: 'bot', text: appendContactInfo("I'm sorry, I encountered an issue. Please try again or email us at info@quwwahealth.com.") }
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

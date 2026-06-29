@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-import blogImage1 from '../assets/images/Hero/10.jpg';
-import blogImage2 from '../assets/images/Hero/11.jpg';
-import blogImage3 from '../assets/images/Hero/12 1.jpg';
-import blogImage4 from '../assets/images/Hero/ChatGPT Image Apr 14, 2025, 04_24_06 PM 1.jpg';
+// import blogImage1 from '../assets/images/Hero/10.jpg';
+// import blogImage2 from '../assets/images/Hero/11.jpg';
+// import blogImage3 from '../assets/images/Hero/12 1.jpg';
+// import blogImage4 from '../assets/images/Hero/ChatGPT Image Apr 14, 2025, 04_24_06 PM 1.jpg';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllBlogs } from '@/store/slices/blogSlice';
 import { formatDate } from '@/config/formatDate';
 
+// Debug log - remove after fixing
+console.log('API Base URL:', import.meta.env.VITE_API_BASE_URL);
 
 /**
  * Note: This is a combined data structure. 
@@ -21,6 +23,7 @@ import { formatDate } from '@/config/formatDate';
  * The detailed information has been merged into the first post.
  * You can follow this pattern to add detailed content for the other posts.
  */
+/*
 export const allBlogPosts = [
   {
     id: 1,
@@ -94,9 +97,11 @@ export const allBlogPosts = [
     id: 2,
     title: 'How Fitness Impacts Focus: The Link Between Movement and Academic Performance',
     image: blogImage2,
+    featured_image_url: blogImage2,
     readTime: '5 Min',
     date: 'July 12, 2025',
-    // --- Detailed Content (Added) ---
+    created_at: '2025-07-12T00:00:00.000Z',
+    updated_at: '2025-07-12T00:00:00.000Z',
     category: 'Academic Performance',
     headings: [
       { id: 'improved-concentration', title: 'Improved Concentration and Attention' },
@@ -140,9 +145,11 @@ export const allBlogPosts = [
     id: 3,
     title: 'Understanding BMI and Fitness Metrics in Children: What Schools and Parents Should Know',
     image: blogImage3,
+    featured_image_url: blogImage3,
     readTime: '6 Min',
     date: 'July 12, 2025',
-    // --- Detailed Content (Added) ---
+    created_at: '2025-07-12T00:00:00.000Z',
+    updated_at: '2025-07-12T00:00:00.000Z',
     category: 'Fitness Metrics',
     author: {
       name: 'Tamás Hám-Szabó',
@@ -193,9 +200,11 @@ export const allBlogPosts = [
     id: 4,
     title: 'Building a Health-Promoting School: Practical Steps for Educators and Administrators',
     image: blogImage4,
+    featured_image_url: blogImage4,
     readTime: '4 Min',
     date: 'July 12, 2025',
-    // --- Detailed Content (Added) ---
+    created_at: '2025-07-12T00:00:00.000Z',
+    updated_at: '2025-07-12T00:00:00.000Z',
     category: 'School Policy',
     author: {
       name: 'Tamás Hám-Szabó',
@@ -249,6 +258,8 @@ export const allBlogPosts = [
     `,
   },
 ];
+*/
+export const allBlogPosts = [];
 
 const Blogs = () => {
   const dispatch = useDispatch();
@@ -262,35 +273,34 @@ const Blogs = () => {
     dispatch(getAllBlogs());
   }, [dispatch]);
 
-  // Use the blogs from Redux store if available, otherwise use the fallback data
-  const displayBlogs = blogs?.length > 0 ? blogs : allBlogPosts;
+  // Use the blogs from Redux store if available
+  const displayBlogs = blogs || [];
   const [featuredPost, setFeaturedPost] = useState(null);
 
-  // Set initial featured post when blogs are loaded
+  // Set initial featured post when blogs are loaded or fallback data is used
   useEffect(() => {
-    if (blogs?.length > 0 && !featuredPost) {
-      setFeaturedPost(blogs[0]);
+    if (displayBlogs?.length > 0 && !featuredPost) {
+      setFeaturedPost(displayBlogs[0]);
     }
-  }, [blogs, featuredPost]);
+  }, [displayBlogs, featuredPost]);
 
   // Auto-rotate featured post
   useEffect(() => {
-    if (!blogs?.length || !featuredPost) return;
+    if (!displayBlogs?.length || !featuredPost) return;
 
     const interval = setInterval(() => {
-      const currentIndex = blogs.findIndex(p => p.id === featuredPost.id);
+      const currentIndex = displayBlogs.findIndex(p => p.id === featuredPost.id);
       if (currentIndex === -1) return;
 
-      const nextIndex = (currentIndex + 1) % blogs.length;
-      setFeaturedPost(blogs[nextIndex]);
+      const nextIndex = (currentIndex + 1) % displayBlogs.length;
+      setFeaturedPost(displayBlogs[nextIndex]);
     }, 5000); // Change blog post every 5 seconds
 
     return () => clearInterval(interval);
-  }, [featuredPost, blogs]);
+  }, [featuredPost, displayBlogs]);
 
   // Only show other posts if we have a featured post
-  const otherPosts = featuredPost ? blogs?.filter(p => p.id !== featuredPost.id) || [] : [];
-
+  const otherPosts = featuredPost ? displayBlogs?.filter(p => p.id !== featuredPost.id) || [] : [];
   // Show loading state if no blogs are loaded yet
   if (loading) {
     return (
@@ -298,6 +308,16 @@ const Blogs = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#3D22CF] mx-auto mb-4"></div>
           <p className="text-gray-700">Loading blogs...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (displayBlogs.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F9F6F1]">
+        <div className="text-center">
+          <p className="text-gray-700 text-xl font-bold">No blogs found.</p>
         </div>
       </div>
     );

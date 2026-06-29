@@ -73,6 +73,14 @@ const getAllBlogs = async (req, res) => {
     // Fetch all blogs
     const [blogs] = await db.query("SELECT * FROM blogs");
 
+    if (!blogs || blogs.length === 0) {
+      return res.status(200).json({
+        message: "Blogs fetched successfully",
+        blogs: [],
+        success: true,
+      });
+    }
+
     // Fetch all headings for these blogs
     const [blogHeadings] = await db.query(
       "SELECT * FROM blog_headings WHERE blog_id IN (?)",
@@ -108,7 +116,7 @@ const getAllBlogs = async (req, res) => {
   } catch (error) {
     console.error("Error fetching blogs:", error);
     return res.status(500).json({
-      message: "Failed to fetch blogs",
+      message: error.message || "Failed to fetch blogs",
       success: false,
     });
   }
@@ -238,6 +246,12 @@ const getBlogById = async (req, res) => {
     const [blog] = await db.query("SELECT * FROM blogs WHERE id = ?", [
       req.params.id,
     ]);
+    if (!blog || blog.length === 0) {
+      return res.status(404).json({
+        message: "Blog not found",
+        success: false
+      });
+    }
     const [headings] = await db.query(
       "SELECT id, heading_title AS title, heading_content AS content FROM blog_headings WHERE blog_id = ?",
       [blog[0].id]
@@ -254,10 +268,10 @@ const getBlogById = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Error in getBlogById:", error);
     return res
       .status(500)
-      .json({ message: "Failed to fetch blog", success: false });
+      .json({ message: error.message || "Failed to fetch blog", success: false });
   }
 };
 

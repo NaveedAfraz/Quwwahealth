@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box, Typography, Link, Checkbox, FormControlLabel, IconButton, Snackbar, Alert } from '@mui/material';
+import { TextField, Button, Box, Typography, Link, Checkbox, FormControlLabel, Snackbar, Alert } from '@mui/material';
 import quwwaLogo from '../assets/images/header.png';
 import { useNavigate } from 'react-router';
 import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
@@ -39,22 +39,6 @@ const GoogleIcon = () => (
         <path
             fill="#EA4335"
             d="M24.4 9.48c3.52 0 6.7.96 9.24 3.44l6.4-6.4C36.34 2.46 30.9 0 24.4 0 14.63 0 6.44 5.38 2.46 13.5l7.52 5.81c2.03-5.99 7.7-10.48 14.42-10.48z"
-        />
-    </svg>
-);
-
-const TwitterIcon = () => (
-    <svg
-        className="w-7 h-7"
-        viewBox="0 0 24 24"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-label="Twitter login"
-        role="img"
-        fill="currentColor" // Use current text color for easy styling
-    >
-        {/* This path creates the standard "X" logo shape. */}
-        <path
-            d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 7.184L18.901 1.153zm-1.653 19.57h2.636L5.05 3.32H2.24l15.008 17.403z"
         />
     </svg>
 );
@@ -242,7 +226,7 @@ function Register() {
                             className="w-full rounded-lg h-[400px]  object-cover"
                         />
                         <Typography sx={{ color: '#6B7281', fontSize: '0.875rem', mt: 'auto', pt: 4, textAlign: 'center' }}>
-                            Alpro 2025
+                            Alpro 2026
                         </Typography>
                     </div>
                 </div>
@@ -273,12 +257,6 @@ function Register() {
                             >
                                 {loading ? 'Signing up...' : 'Sign up with Google'}
                             </Button>
-                            <IconButton
-                                sx={{ border: '1px solid #D1D5DB', borderRadius: '8px', color: '#1DA1F2' }}
-                                disabled={loading}
-                            >
-                                <TwitterIcon />
-                            </IconButton>
                         </Box>
 
                         <Box sx={{ display: 'flex', alignItems: 'center', my: 3 }}>
@@ -468,11 +446,7 @@ function Register() {
                             >
                                 Create Account
                             </Button>
-                            <Typography sx={{ color: '#6B7281', fontSize: '0.75rem', textAlign: 'center' }}>
-                                This site is protected by reCAPTCHA and the Google <br />
-                                <Link href="#" sx={{ color: '#00A99D' }}>Privacy Policy</Link> and{' '}
-                                <Link href="#" sx={{ color: '#00A99D' }}>Terms of Service</Link> apply.
-                            </Typography>
+
                         </Box>
                     </div>
                 </div>

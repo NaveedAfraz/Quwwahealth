@@ -1,7 +1,7 @@
 // Configuration file for environment variables and API settings
 export const config = {
   // API Configuration
-  API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
+  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || '/api',
   
   // Google OAuth Configuration
   GOOGLE_CLIENT_ID: import.meta.env.VITE_GOOGLE_CLIENT_ID,

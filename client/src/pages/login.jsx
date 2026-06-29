@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { TextField, Button, Box, Typography, Switch, FormControlLabel, styled, Snackbar, Alert } from '@mui/material';
 import { Link, useNavigate } from 'react-router';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
@@ -73,6 +73,17 @@ function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
+
+    useEffect(() => {
+        const savedRememberMe = localStorage.getItem('rememberMe') === 'true';
+        if (savedRememberMe) {
+            setRememberMe(true);
+            const savedEmail = localStorage.getItem('rememberedEmail');
+            const savedPassword = localStorage.getItem('rememberedPassword');
+            if (savedEmail) setEmail(savedEmail);
+            if (savedPassword) setPassword(savedPassword);
+        }
+    }, []);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -100,6 +111,15 @@ function Login() {
             });
             console.log(response.data);
             if (response.data.message === 'Login successful') {
+                if (rememberMe) {
+                    localStorage.setItem('rememberedEmail', email);
+                    localStorage.setItem('rememberedPassword', password);
+                    localStorage.setItem('rememberMe', 'true');
+                } else {
+                    localStorage.removeItem('rememberedEmail');
+                    localStorage.removeItem('rememberedPassword');
+                    localStorage.removeItem('rememberMe');
+                }
                 setOpenSnackbar(true);
                 setSnackbarMessage('Login successful');
                 setSnackbarSeverity('success');
@@ -200,10 +220,9 @@ function Login() {
                     />
                 </Box>
                 <Box sx={{
-                    width: '100%',
                     height: '100%',
                     // bgcolor: '#1e3a8a',
-                    width: { md: '40%', lg: '30%' },
+                    width: { xs: '100%', md: '40%', lg: '30%' },
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
@@ -406,7 +425,7 @@ function Login() {
 
                         {/* Footer */}
                         <Typography sx={{ color: '#6B7281', fontSize: '0.875rem', mt: 6, textAlign: 'center' }}>
-                            &copy; Quwwa 2025
+                            &copy; Quwwa 2026
                         </Typography>
                     </Box>
                 </Box>

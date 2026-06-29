@@ -87,9 +87,9 @@ const AdminRoute = ({ children }) => {
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
-  // if (user?.role !== 'admin') {
-  //   return <Navigate to="/" />;
-  // }
+  if (user?.role !== 'admin') {
+    return <Navigate to="/" />;
+  }
   
   return children;
 };

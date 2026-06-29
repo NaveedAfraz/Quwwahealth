@@ -18,12 +18,12 @@ import {
 export const useTestimonials = () => {
   const dispatch = useDispatch();
   const {
-    testimonials,
-    currentTestimonial,
-    loading,
-    error,
-    success
-  } = useSelector((state) => state.testimonial);
+    testimonials = [],
+    currentTestimonial = null,
+    loading = false,
+    error = null,
+    success = false
+  } = useSelector((state) => state.testimonial || {});
 
   // Clear error message
   const clearErrorHandler = () => dispatch(clearError());

@@ -107,7 +107,7 @@ const AdminTestimonials = () => {
         }
     }, [error, success, clearError, clearSuccess]);
 
-    if (loading && !testimonials.length) {
+    if (loading && (!testimonials || !testimonials.length)) {
         return (
             <div className="flex items-center justify-center min-h-[50vh]">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -132,7 +132,7 @@ const AdminTestimonials = () => {
 
             {/* Testimonials Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {testimonials.map((testimonial) => (
+                {testimonials && testimonials.map((testimonial) => (
                     <div key={testimonial.id} className="bg-white shadow rounded-lg p-6 hover:shadow-md transition-shadow">
                         <div className="flex flex-col h-full">
                             <div className="flex-grow">
@@ -162,7 +162,7 @@ const AdminTestimonials = () => {
                     </div>
                 ))}
 
-                {testimonials.length === 0 && (
+                {(!testimonials || testimonials.length === 0) && (
                     <div className="col-span-full py-12 text-center">
                         <p className="text-gray-500">No testimonials found. Add your first testimonial!</p>
                     </div>

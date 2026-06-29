@@ -10,6 +10,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/autoplay';
 
 // Fallback testimonials in case API is not available
+/*
 const fallbackTestimonials = [
   {
     quote: "Quwwa Health Summer Camp was the best part of my holidays! I learned swimming, did fun educational activities, and enjoyed team games. Every day was exciting, and I became more active and confident.",
@@ -57,15 +58,17 @@ const fallbackTestimonials = [
     title: 'Parent of Grade 7 Student',
   }
 ];
+*/
+const fallbackTestimonials = [];
 
 const Testimonials = () => {
   const dispatch = useDispatch();
   const { 
-    testimonials = fallbackTestimonials, 
+    testimonials, 
     loading, 
     error 
   } = useSelector((state) => ({
-    testimonials: state.testimonial?.testimonials?.length > 0 ? state.testimonial.testimonials : fallbackTestimonials,
+    testimonials: state.testimonial?.testimonials || [],
     loading: state.testimonial?.loading || false,
     error: state.testimonial?.error || null
   }));
@@ -98,6 +101,10 @@ const Testimonials = () => {
         </div>
       </section>
     );
+  }
+
+  if (!loading && (!testimonials || testimonials.length === 0)) {
+    return null;
   }
 
   return (

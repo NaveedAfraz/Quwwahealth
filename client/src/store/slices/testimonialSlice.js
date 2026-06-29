@@ -7,6 +7,14 @@ const api = axios.create({
   withCredentials: true,
 });
 
+api.interceptors.request.use((config) => {
+  if (config.url && config.url.startsWith('/') && config.baseURL) {
+    config.url = `${config.baseURL}${config.url}`;
+    config.baseURL = undefined;
+  }
+  return config;
+});
+
 // Get all testimonials
 export const getTestimonials = createAsyncThunk(
   "testimonial/getTestimonials",
@@ -116,7 +124,7 @@ const testimonialSlice = createSlice({
       })
       .addCase(getTestimonials.fulfilled, (state, action) => {
         state.loading = false;
-        state.testimonials = action.payload.data;
+        state.testimonials = action.payload?.data || (Array.isArray(action.payload) ? action.payload : []);
       })
       .addCase(getTestimonials.rejected, (state, action) => {
         state.loading = false;
@@ -130,7 +138,7 @@ const testimonialSlice = createSlice({
       })
       .addCase(getTestimonialById.fulfilled, (state, action) => {
         state.loading = false;
-        state.currentTestimonial = action.payload.data;
+        state.currentTestimonial = action.payload?.data || action.payload || null;
       })
       .addCase(getTestimonialById.rejected, (state, action) => {
         state.loading = false;
@@ -146,7 +154,12 @@ const testimonialSlice = createSlice({
       .addCase(createTestimonial.fulfilled, (state, action) => {
         state.loading = false;
         state.success = true;
-        state.testimonials.unshift(action.payload.data);
+        if (!Array.isArray(state.testimonials)) {
+          state.testimonials = [];
+        }
+        if (action.payload?.data || action.payload) {
+          state.testimonials.unshift(action.payload.data || action.payload);
+        }
       })
       .addCase(createTestimonial.rejected, (state, action) => {
         state.loading = false;
@@ -162,14 +175,20 @@ const testimonialSlice = createSlice({
       .addCase(updateTestimonial.fulfilled, (state, action) => {
         state.loading = false;
         state.success = true;
-        const index = state.testimonials.findIndex(
-          (t) => t.id === action.payload.data.id
-        );
-        if (index !== -1) {
-          state.testimonials[index] = action.payload.data;
+        if (!Array.isArray(state.testimonials)) {
+          state.testimonials = [];
         }
-        if (state.currentTestimonial?.id === action.payload.data.id) {
-          state.currentTestimonial = action.payload.data;
+        const updatedData = action.payload?.data || action.payload;
+        if (updatedData && updatedData.id) {
+          const index = state.testimonials.findIndex(
+            (t) => t.id === updatedData.id
+          );
+          if (index !== -1) {
+            state.testimonials[index] = updatedData;
+          }
+          if (state.currentTestimonial?.id === updatedData.id) {
+            state.currentTestimonial = updatedData;
+          }
         }
       })
       .addCase(updateTestimonial.rejected, (state, action) => {
@@ -186,6 +205,9 @@ const testimonialSlice = createSlice({
       .addCase(deleteTestimonial.fulfilled, (state, action) => {
         state.loading = false;
         state.success = true;
+        if (!Array.isArray(state.testimonials)) {
+          state.testimonials = [];
+        }
         state.testimonials = state.testimonials.filter(
           (t) => t.id !== action.payload
         );
