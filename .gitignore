@@ -38,6 +38,9 @@ yarn-error.log*
 # Build files
 dist/
 build/
+*.zip
+dist.zip
+
 
 # Debug logs
 npm-debug.log*
