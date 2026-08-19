@@ -178,31 +178,53 @@ const Chatbot = ({ isOpen, setIsOpen }) => {
       throw new Error('Groq API Key not configured');
     }
     
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${groqKey}`
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: [
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.7
-      })
-    });
-    
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`Groq API error: ${response.status} - ${errText}`);
+    // High-capacity models with auto-failover if one hits rate limits (429)
+    const modelsToTry = [
+      'openai/gpt-oss-120b',
+      'openai/gpt-oss-20b',
+      'groq/compound',
+      'qwen/qwen3.6-27b'
+    ];
+
+    let lastError = null;
+
+    for (const model of modelsToTry) {
+      try {
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${groqKey}`
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: [
+              {
+                role: 'user',
+                content: prompt
+              }
+            ],
+            max_tokens: 250,
+            temperature: 0.7
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const content = data.choices?.[0]?.message?.content;
+          if (content) return content;
+        } else {
+          const errText = await response.text();
+          console.warn(`Groq model ${model} failed (${response.status}): ${errText}`);
+          lastError = new Error(`Groq ${model} error: ${response.status}`);
+        }
+      } catch (err) {
+        console.warn(`Groq model ${model} exception:`, err);
+        lastError = err;
+      }
     }
-    
-    const data = await response.json();
-    return data.choices?.[0]?.message?.content || '';
+
+    throw lastError || new Error('All Groq models failed');
   };
 
   const withTimeout = (promise, ms) => {
@@ -378,7 +400,7 @@ User's question: ${query}`;
             <img src={quwwaLogo} alt="Quwwa Health" className="h-8 bg-white p-1 rounded-md object-contain" />
             <div>
               <h3 className="font-bold text-white text-base sm:text-lg leading-tight">Quwwa Health Assistant</h3>
-              <p className="text-xs text-green-100">Powered by Gemini</p>
+              <p className="text-xs text-green-100">Powered by Groq AI</p>
             </div>
           </div>
           <button
