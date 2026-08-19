@@ -9,7 +9,7 @@ const AuthNavigator = () => {
   const location = useLocation();
   useEffect(() => { 
     // Only navigate to home if the user is authenticated AND not in the middle of linking a password.
-    if (isAuthenticated && !isLinkingPassword && !hasNavigated.current && location.pathname == "/auth/login") {
+    if (isAuthenticated && !isLinkingPassword && !hasNavigated.current && location.pathname.startsWith("/auth")) {
       hasNavigated.current = true;
       navigate('/');
     }

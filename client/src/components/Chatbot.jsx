@@ -65,6 +65,32 @@ const Chatbot = ({ isOpen, setIsOpen }) => {
     }
   }, [messages]);
 
+  // Prevent background page from scrolling when chat is open on mobile
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    if (window.innerWidth < 640) {
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isOpen]);
+
+  const handleContainerWheel = (e) => {
+    e.stopPropagation();
+    const el = chatContainerRef.current;
+    if (!el) return;
+    const { scrollTop, scrollHeight, clientHeight } = el;
+    const isAtTop = scrollTop <= 0 && e.deltaY < 0;
+    const isAtBottom = (scrollTop + clientHeight >= scrollHeight - 1) && e.deltaY > 0;
+    if (isAtTop || isAtBottom) {
+      e.preventDefault();
+    }
+  };
+
   const appendContactInfo = (text) => {
     const contactSuffix = " For more info Email us at info@quwwahealth.com or call +91 8770922310.";
     if (text.includes("info@quwwahealth.com") || text.includes("+91 8770922310") || text.includes("8770922310")) {
@@ -329,46 +355,63 @@ User's question: ${query}`;
   return (
     <>
       {/* Chat Bubble */}
-      <div className="fixed bottom-8 right-8 z-50">
+      <div className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-50">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="bg-[#54BD95] text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-green-600 transition-transform transform hover:scale-110"
+          className="bg-[#54BD95] text-white w-14 h-14 sm:w-16 sm:h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-green-600 transition-transform transform hover:scale-105 active:scale-95"
+          aria-label={isOpen ? "Close chat" : "Open chat"}
         >
-          {isOpen ? <FiX size={28} /> : <FiMessageSquare size={28} />}
+          {isOpen ? <FiX size={26} /> : <FiMessageSquare size={26} />}
         </button>
       </div>
 
       {/* Chat Window */}
       <div
-        className={`fixed bottom-28 right-8 z-50 w-96 bg-white rounded-2xl shadow-xl transition-all duration-300 ease-in-out ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'
-          }`}
+        onWheel={handleContainerWheel}
+        className={`fixed bottom-20 right-3 left-3 sm:left-auto sm:right-8 sm:bottom-28 z-50 sm:w-96 max-w-full bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col max-h-[calc(100vh-6.5rem)] sm:max-h-[600px] overflow-hidden overscroll-contain transition-all duration-300 ease-in-out ${
+          isOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-8 pointer-events-none'
+        }`}
       >
         {/* Header */}
-        <div className="bg-[#54BD95] p-4 rounded-t-2xl flex items-center gap-4">
-          <img src={quwwaLogo} alt="Quwwa Health" className="h-8 bg-white p-1 rounded-md" />
-          <div>
-            <h3 className="font-bold text-white text-lg">Quwwa Health Assistant</h3>
-            <p className="text-xs text-green-100">Powered by Gemini</p>
+        <div className="bg-[#54BD95] p-3.5 sm:p-4 rounded-t-2xl flex items-center justify-between gap-3 text-white flex-shrink-0 select-none">
+          <div className="flex items-center gap-3">
+            <img src={quwwaLogo} alt="Quwwa Health" className="h-8 bg-white p-1 rounded-md object-contain" />
+            <div>
+              <h3 className="font-bold text-white text-base sm:text-lg leading-tight">Quwwa Health Assistant</h3>
+              <p className="text-xs text-green-100">Powered by Gemini</p>
+            </div>
           </div>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="text-white hover:bg-white/20 p-1.5 rounded-full transition-colors flex items-center justify-center"
+            aria-label="Close chat window"
+          >
+            <FiX size={20} />
+          </button>
         </div>
 
         {/* Messages */}
-        <div ref={chatContainerRef} className="h-96 p-4 overflow-y-auto space-y-4">
+        <div
+          ref={chatContainerRef}
+          onWheel={handleContainerWheel}
+          className="flex-1 p-3.5 sm:p-4 overflow-y-auto space-y-3 min-h-[200px] max-h-[50vh] sm:max-h-[380px] overscroll-contain"
+          style={{ touchAction: 'pan-y' }}
+        >
           <div className="flex justify-start">
-            <div className="max-w-xs px-4 py-2 rounded-2xl bg-gray-100 text-[#191A15] rounded-bl-none">
+            <div className="max-w-[85%] px-4 py-2.5 rounded-2xl bg-gray-100 text-[#191A15] text-sm sm:text-base rounded-bl-none">
               Hello! I am the Quwwa Health assistant. How can I help you today?
             </div>
           </div>
 
           {/* Suggested Questions */}
           {showSuggestions && messages.length === 0 && (
-            <div className="space-y-2">
+            <div className="space-y-1.5 pt-1">
               <p className="text-xs text-gray-500 font-medium">Quick questions:</p>
               {suggestedQuestions.map((question, index) => (
                 <button
                   key={index}
                   onClick={() => handleSuggestedQuestion(question)}
-                  className="block w-full text-left px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
+                  className="block w-full text-left px-3 py-2 text-xs sm:text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors border border-blue-100"
                 >
                   {question}
                 </button>
@@ -379,10 +422,11 @@ User's question: ${query}`;
           {messages.map((msg, index) => (
             <div key={index} className={`flex ${msg.sender === 'bot' ? 'justify-start' : 'justify-end'}`}>
               <div
-                className={`max-w-xs px-4 py-2 rounded-2xl ${msg.sender === 'bot'
+                className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-sm sm:text-base ${
+                  msg.sender === 'bot'
                     ? 'bg-gray-100 text-[#191A15] rounded-bl-none'
-                    : 'bg-green-500 text-white rounded-br-none'
-                  }`}
+                    : 'bg-[#54BD95] text-white rounded-br-none'
+                }`}
               >
                 {msg.text}
               </div>
@@ -390,7 +434,7 @@ User's question: ${query}`;
           ))}
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-gray-100 text-[#A6A6A6] px-4 py-2 rounded-2xl rounded-bl-none">
+              <div className="bg-gray-100 text-[#A6A6A6] px-4 py-2.5 rounded-2xl rounded-bl-none text-sm">
                 Typing...
               </div>
             </div>
@@ -398,21 +442,22 @@ User's question: ${query}`;
         </div>
 
         {/* Input Form */}
-        <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-200 flex items-center gap-2">
+        <form onSubmit={handleSendMessage} className="p-3 sm:p-4 border-t border-gray-100 flex items-center gap-2 flex-shrink-0 bg-white">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask something..."
-            className="w-full px-4 py-2 bg-gray-100 rounded-full border-transparent focus:outline-none focus:ring-2 focus:ring-[#54BD95]"
+            className="flex-1 px-4 py-2.5 bg-gray-100 rounded-full text-sm border-transparent focus:outline-none focus:ring-2 focus:ring-[#54BD95]"
             disabled={isLoading}
           />
           <button
             type="submit"
-            className="bg-[#54BD95] text-white p-3 rounded-full hover:bg-green-600 disabled:bg-gray-300"
+            className="bg-[#54BD95] text-white p-2.5 sm:p-3 rounded-full hover:bg-green-600 disabled:bg-gray-300 transition-colors flex-shrink-0"
             disabled={isLoading || !input.trim()}
+            aria-label="Send message"
           >
-            <FiSend size={20} />
+            <FiSend size={18} />
           </button>
         </form>
       </div>

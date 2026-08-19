@@ -138,7 +138,7 @@ const Header = () => {
                   {isUserMenuOpen && (
                     <div id="user-menu-dropdown" className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-50 border">
                       <div className="px-4 py-3 border-b">
-                        <div className="font-bold text-gray-800 truncate">{user?.name}</div>
+                        <div className="font-bold text-gray-800 truncate">{user?.name || user?.school_name || user?.displayName || user?.email}</div>
                         <div className="text-sm text-gray-500 truncate">{user?.email}</div>
                       </div>
                       {user.role === 'admin' && (
@@ -213,8 +213,8 @@ const Header = () => {
                   <div className="flex items-center space-x-3 mb-4">
                     {renderUserAvatar()}
                     <div>
-                      <div className="font-bold text-gray-800 truncate">{user.display_name}</div>
-                      <div className="text-sm text-gray-500 truncate">{user.email}</div>
+                      <div className="font-bold text-gray-800 truncate">{user?.display_name || user?.name || user?.school_name || user?.displayName || user?.email}</div>
+                      <div className="text-sm text-gray-500 truncate">{user?.email}</div>
                     </div>
                   </div>
                   {user.role === 'admin' && (

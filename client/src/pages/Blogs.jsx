@@ -339,7 +339,7 @@ const Blogs = () => {
               <img src={featuredPost?.featured_image_url} alt={featuredPost?.title} className="w-full h-96 object-contain group-hover:scale-105 transition-transform duration-300" />
             </div>
             <p className="text-3xl font-bold mt-6 group-hover:text-gray-700">{featuredPost?.title}</p>
-            <p className="text-[#A6A6A6] mt-2 text-sm">{featuredPost?.readTime || '4 Min'} • {featuredPost?.updated_at}</p>
+            <p className="text-[#A6A6A6] mt-2 text-sm">{featuredPost?.readTime || '4 Min'} • {formatDate(featuredPost?.updated_at || featuredPost?.created_at)}</p>
           </Link>
         </div>
 

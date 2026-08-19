@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 import { auth, googleProvider } from '../firebase';
 import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import LinkPasswordModal from './LinkPasswordModal';
+import { useAuth } from '../contexts/AuthContext';
 
 const Auth = () => {
-  const { setLinkingPassword } = useAuth();
+  const { setLinkingPassword, setUser, setIsAuthenticated } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLogin, setIsLogin] = useState(true);
@@ -133,10 +134,18 @@ const Auth = () => {
       </div>
       <LinkPasswordModal
         open={showLinkModal}
-        onClose={() => setShowLinkModal(false)}
-        userEmail={googleUserEmail}
-        onLinked={() => {
+        onClose={() => {
           setShowLinkModal(false);
+          setLinkingPassword(false);
+        }}
+        userEmail={googleUserEmail}
+        onLinked={(userData) => {
+          if (userData) {
+            setUser(userData);
+            setIsAuthenticated(true);
+          }
+          setShowLinkModal(false);
+          setLinkingPassword(false);
         }}
       />
     </div>

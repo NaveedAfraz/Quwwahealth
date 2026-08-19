@@ -156,6 +156,7 @@ function Register() {
                 // Success: navigate or let AuthContext handle
                 console.log(response.data);
                 if (response.data.user.password == "") {
+                    setLinkingPassword(true);
                     setGoogleUserEmail(response.data.user.email);
                     setShowLinkModal(true);
                 } else {
@@ -172,6 +173,7 @@ function Register() {
                 const msg = backendErr?.response?.data?.message || backendErr.message;
                 if (msg && msg.includes("Field 'password' doesn't have a default value")) {
                     // Prompt for password linking
+                    setLinkingPassword(true);
                     setGoogleUserEmail(user.email);
                     setShowLinkModal(true);
                     setSnackbarMessage('Please set a password to complete your account setup.');
@@ -469,9 +471,15 @@ function Register() {
                     setLinkingPassword(false); // Reset linking state when modal is closed
                 }}
                 userEmail={googleUserEmail}
-                onLinked={() => {
+                onLinked={(userData) => {
+                    if (userData) {
+                        setUser(userData);
+                        setIsAuthenticated(true);
+                    }
                     setShowLinkModal(false);
                     setLinkingPassword(false); // Reset linking state when done
+                    setSnackbarMessage('Password linked! Registration complete.');
+                    setSnackbarSeverity('success');
                     setOpenSnackbar(true);
                 }}
             />

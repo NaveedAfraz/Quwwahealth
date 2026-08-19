@@ -23,7 +23,7 @@ const style = {
 };
 
 export default function LinkPasswordModal({ open, onClose, userEmail, onLinked }) {
-  const { setLinkingPassword } = useAuth();
+  const { setLinkingPassword, setUser, setIsAuthenticated, checkAuth } = useAuth();
   const navigate = useNavigate();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -54,31 +54,56 @@ export default function LinkPasswordModal({ open, onClose, userEmail, onLinked }
     }
     setLoading(true);
     try {
-      // First, sign in with email/password
-      // const { signInWithEmailAndPassword } = await import('firebase/auth');
-      // await signInWithEmailAndPassword(auth, userEmail, password);
-      // // If there is a pending Google credential, link it now
-      // if (window.pendingGoogleCredential) {
-      //   await linkWithCredential(auth.currentUser, window.pendingGoogleCredential);
-      //   window.pendingGoogleCredential = null;
-      //   setSuccess('Google account linked! You can now login with Google or email/password.');
-      const addPassword = await axios.post(`${config.API_BASE_URL}/reset-password`, { email: userEmail, newPassword: password }, { withCredentials: true });
-      console.log(addPassword);
+      const addPassword = await axios.post(
+        `${config.API_BASE_URL}/reset-password`,
+        { email: userEmail, newPassword: password },
+        { withCredentials: true }
+      );
+      console.log('Reset password response:', addPassword);
 
-
-      // setSuccess('Password linked successfully!');
       if (addPassword.data.success === true) {
+        setSuccess('Password linked successfully!');
+        
+        let authenticatedUser = null;
+        // If Firebase user is available, ensure session is synced
+        if (auth.currentUser) {
+          try {
+            const idToken = await auth.currentUser.getIdToken(true);
+            const sessionRes = await axios.post(
+              `${config.API_BASE_URL}/auth/session`,
+              { idToken },
+              { withCredentials: true }
+            );
+            if (sessionRes.data?.user) {
+              authenticatedUser = sessionRes.data.user;
+            }
+          } catch (sessionErr) {
+            console.error('Session sync error after password link:', sessionErr);
+          }
+        }
+        
+        // Ensure AuthContext is immediately updated
+        if (checkAuth) {
+          const checkedUser = await checkAuth();
+          if (checkedUser) authenticatedUser = checkedUser;
+        } else if (authenticatedUser) {
+          setUser(authenticatedUser);
+          setIsAuthenticated(true);
+        }
+
         setPassword('');
         setConfirmPassword('');
-        if (onLinked) onLinked();
+        setLinkingPassword(false);
+        if (onLinked) onLinked(authenticatedUser);
+
         setTimeout(() => {
           setSuccess('');
           navigate('/');
-          handleClose();
-        }, 1200);
+          onClose();
+        }, 1000);
       }
     } catch (err) {
-      console.log(err);
+      console.error('Link password error:', err);
       setError(err.response?.data?.message || 'An error occurred.');
     } finally {
       setLoading(false);

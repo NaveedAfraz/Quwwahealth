@@ -15,6 +15,43 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isLinkingPassword, setLinkingPassword] = useState(false);
 
+  const checkAuth = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        `${config.API_BASE_URL}/auth/check`,
+        { 
+          withCredentials: true,
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        }
+      );
+      
+      console.log('AuthContext: Session check response:', response.data);
+
+      if (response.data.authenticated && response.data.user) {
+        console.log('AuthContext: Session active for:', response.data.user);
+        setUser(response.data.user);
+        setIsAuthenticated(true);
+        setLoading(false);
+        return response.data.user;
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+        setLoading(false);
+        return null;
+      }
+    } catch (error) {
+      console.error('AuthContext: Check auth failed:', error);
+      setUser(null);
+      setIsAuthenticated(false);
+      setLoading(false);
+      return null;
+    }
+  };
+
   // This effect handles keeping the user logged in on page refresh.
   useEffect(() => {
     let isMounted = true;
@@ -64,23 +101,13 @@ export const AuthProvider = ({ children }) => {
               
               if (isMounted) {
                 console.log('Auth context session set up successfully', res.data);
+                const backendUser = res.data.user || {};
                 setUser({
+                  ...backendUser,
                   uid: firebaseUser.uid,
-                  email: firebaseUser.email,
-                  displayName: firebaseUser.displayName,
-                  photoURL: firebaseUser.photoURL,
-                  address: res.data.address,
-                  city: res.data.city,
-                  contact_person: res.data.contact_person,
-                  created_at: res.data.created_at,
-                  firebase_uid: res.data.firebase_uid,
-                  id: res.data.id,
-                  password: res.data.password,
-                  phone_number: res.data.phone_number,
-                  school_name: res.data.school_name,
-                  state: res.data.state,
-                  updated_at: res.data.updated_at,
-                  zip_code: res.data.zip_code
+                  email: firebaseUser.email || backendUser.email,
+                  displayName: firebaseUser.displayName || backendUser.school_name,
+                  photoURL: firebaseUser.photoURL
                 });
                 setIsAuthenticated(true);
                 setLoading(false);
@@ -132,6 +159,7 @@ export const AuthProvider = ({ children }) => {
       await auth.signOut();
     } catch (error) {
       console.error('Logout failed:', error);
+    } finally {
       setUser(null);
       setIsAuthenticated(false);
     }
@@ -145,7 +173,8 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated,
     logout,
     isLinkingPassword,
-    setLinkingPassword
+    setLinkingPassword,
+    checkAuth
   }), [loading, isAuthenticated, user, isLinkingPassword]);
 
   return (

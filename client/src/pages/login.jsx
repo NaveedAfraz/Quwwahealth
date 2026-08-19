@@ -69,7 +69,7 @@ const GoogleIcon = () => (
 
 
 function Login() {
-    const { setUser, setIsAuthenticated } = useAuth();
+    const { setUser, setIsAuthenticated, setLinkingPassword } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
@@ -156,6 +156,7 @@ function Login() {
                 // Success: navigate or let AuthContext handle
                 console.log(response.data);
                 if (response.data.user.password == "") {
+                    setLinkingPassword(true);
                     setGoogleUserEmail(response.data.user.email);
                     setShowLinkModal(true);
                 } else {
@@ -171,6 +172,7 @@ function Login() {
                 const msg = backendErr?.response?.data?.message || backendErr.message;
                 if (msg && msg.includes("Field 'password' doesn't have a default value")) {
                     // Prompt for password linking
+                    setLinkingPassword(true);
                     setGoogleUserEmail(user.email);
                     setShowLinkModal(true);
                     setSnackbarMessage('Please set a password to complete your account setup.');
@@ -447,15 +449,22 @@ function Login() {
             {/* Link password modal for Google users */}
             <LinkPasswordModal
                 open={showLinkModal}
-                onClose={() => setShowLinkModal(false)}
+                onClose={() => {
+                    setShowLinkModal(false);
+                    setLinkingPassword(false);
+                }}
                 userEmail={googleUserEmail}
 
-                onLinked={() => {
+                onLinked={(userData) => {
+                    if (userData) {
+                        setUser(userData);
+                        setIsAuthenticated(true);
+                    }
+                    setLinkingPassword(false);
                     setSnackbarMessage('Password linked! You can now login with email and password.');
                     setSnackbarSeverity('success');
                     setOpenSnackbar(true);
                     setShowLinkModal(false);
-                    // The user is already logged in, AuthNavigator will handle redirection.
                 }}
             />
         </Box>
